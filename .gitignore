@@ -1,0 +1,45 @@
+# Binários compilados
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+go-api
+/bin/
+
+# Artefatos de teste
+*.test
+*.out
+coverage.html
+coverage.out
+
+# Dependências do Go
+vendor/
+
+Secrets
+.env
+.env.*
+!.env.example
+
+# Dados do MongoDB local
+data/
+
+# IDEs e editores
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Osys
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+*.log
+
+docker-compose.yml
