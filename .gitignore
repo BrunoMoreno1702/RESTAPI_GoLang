@@ -16,10 +16,12 @@ coverage.out
 # Dependências do Go
 vendor/
 
-Secrets
+# Secrets
 .env
 .env.*
 !.env.example
+*.pem
+*.key
 
 # Dados do MongoDB local
 data/
@@ -41,5 +43,3 @@ docker-compose.override.yml
 
 # Logs
 *.log
-
-docker-compose.yml
