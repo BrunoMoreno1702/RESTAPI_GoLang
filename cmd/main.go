@@ -1,10 +1,13 @@
 package main
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 	"go-api/controller"
 	"go-api/db"
+	"go-api/middleware"
 	"go-api/repository"
 	"go-api/usecase"
 )
@@ -13,18 +16,22 @@ func main() {
 	server := gin.Default()
 
 	dbConnect, err := db.ConectDB()
-
 	if err != nil {
 		panic(err)
 	}
 
-	//Camada de Repository
+	redisClient, err := db.ConnectRedis()
+	if err != nil {
+		panic(err)
+	}
+
+	// Camada de Repository
 	ProductRepository := repository.NewProductRepository(dbConnect)
 
-	//Camadade UseCase
-	ProductUseCase := usecase.NewProductUseCase(ProductRepository)
+	// Camada de UseCase
+	ProductUseCase := usecase.NewProductUseCase(ProductRepository, redisClient)
 
-	//Camada Controller
+	// Camada Controller
 	ProductController := controller.NewProductController(ProductUseCase)
 
 	server.GET("/ping", func(ctx *gin.Context) {
@@ -33,11 +40,15 @@ func main() {
 		})
 	})
 
-	//Rotas
-	server.GET("/products", ProductController.GetProducts)
-	server.GET("/products/:id", ProductController.GetProductById)
-	server.POST("/products", ProductController.CreateProduct)
-	server.PUT("/products/:id", ProductController.UpdateProduct)
-	server.DELETE("/products/:id", ProductController.DeleteProduct)
+	products := server.Group("/products")
+	products.Use(middleware.RateLimit(redisClient, 60, time.Minute))
+	{
+		products.GET("", ProductController.GetProducts)
+		products.GET("/:id", ProductController.GetProductById)
+		products.POST("", ProductController.CreateProduct)
+		products.PUT("/:id", ProductController.UpdateProduct)
+		products.DELETE("/:id", ProductController.DeleteProduct)
+	}
+
 	server.Run(":8080")
 }
